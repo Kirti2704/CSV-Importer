@@ -1,0 +1,45 @@
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  // Create a custom menu in Google Sheets
+  ui.createMenu('CSV Import')
+    .addItem('Upload CSV', 'showDialog')
+    .addToUi();
+}
+
+function showDialog() {
+  // Create a modal dialog for file upload and column selection
+  var htmlOutput = HtmlService.createHtmlOutputFromFile('Index')
+    .setWidth(600)
+    .setHeight(400);
+  SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'CSV Import');
+}
+
+function importCSV(data, selectedColumns, sortOption) {
+  // Parse uploaded CSV data (assuming CSV data is in a 2D array)
+  var csvData = Utilities.parseCsv(data);
+  
+  // Select specified columns
+  var selectedData = csvData.map(function(row) {
+    return row.filter(function(_, columnIndex) {
+      return selectedColumns[columnIndex];
+    });
+  });
+  
+  // Apply sorting if needed
+  if (sortOption === 'asc') {
+    selectedData.sort(function(a, b) {
+// Replace 0 with the appropriate column index for sorting
+      return a[0] - b[0];
+    });
+  } else if (sortOption === 'desc') {
+    selectedData.sort(function(a, b) {
+      // Replace 0 with the appropriate column index for sorting
+      return b[0] - a[0];
+    });
+  }
+
+  // Append data to the chosen sheet (replace "Sheet1" with your sheet name)
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet.getSheetByName(sheetName)();
+  var lastRow = sheet.getLastRow();
+  sheet.getRange(sheet.getLastRow + 1, 1, selectedData.length, selectedData[0].length).setValues(selectedData);
+}
