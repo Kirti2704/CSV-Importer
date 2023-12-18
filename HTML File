@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+</head>
+<body>
+  <h2>CSV Importer</h2>
+  <form>
+    <input type="file" id="csvFile" multiple accept=".csv">
+    <br><br>
+    <div id="columnOptions"></div>
+    <br><br>
+    <select id="sortOption">
+      <option value="none">No Sorting</option>
+      <option value="asc">Sort Ascending</option>
+      <option value="desc">Sort Descending</option>
+    </select>
+    <br><br>
+    <input type="button" value="Import" onclick="importCSV()">
+  </form>
+
+<script>
+  // JavaScript code to handle file upload and other interactions
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize variables to store column selection
+    var columnSelection = [];
+
+    // Function to create checkboxes for column selection
+    function createCheckboxes(headers) {
+      var columnOptions = document.getElementById('columnOptions');
+      for (var i = 0; i < headers.length; i++) {
+        var checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'column';
+        checkbox.value = headers[i]; // Use the header text as the checkbox value
+        checkbox.id = 'column' + i;
+        var label = document.createElement('label');
+        label.htmlFor = 'column' + i;
+        label.appendChild(document.createTextNode(headers[i]));
+        columnOptions.appendChild(checkbox);
+        columnOptions.appendChild(label);
+        columnOptions.appendChild(document.createElement('br'));
+      }
+    }
+
+    // Function to upload the selected files to the server
+    function uploadFiles(files) {
+      // Loop through each selected file
+      for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var formData = new FormData();
+        formData.append('file', file);
+
+        // Send the file to the server (replace 'YOUR_WEB_APP_URL' with the actual URL)
+        fetch('https://script.google.com/macros/s/AKfycbwrzN6LXDQL8TwL5HtJ8760lwnWjR-w_bE8RYpgqMv9boG6jQKy4WfXv3Bp5bT36VE/exec', {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Authorization': 'Bearer ' + ScriptApp.getOAuthToken(),
+          },
+        }) 
+.then(response => response.text())
+        .then(function(data) {
+          // Data contains the response from the server, e.g., success message
+          console.log('File uploaded successfully:', data);
+        })
+        .catch(function(error) {
+          // Handle errors
+          console.error('Error uploading file:', error);
+        });
+      }
+    }
+
+    // Function to import the CSV data
+    function importCSV() {
+      // Get the selected columns
+      var selectedColumns = [];
+      var checkboxes = document.getElementsByName('column');
+      for (var i = 0; i < checkboxes.length; i++) {
+        selectedColumns.push(checkboxes[i].value);
+      }
+
+      // Perform client-side validation (add your own validation logic)
+      if (!selectedColumns.some(Boolean)) {
+        alert('Please select at least one column.');
+        return;
+      }
+
+      // Get the selected files
+      var fileInput = document.getElementById('csvFile');
+      var files = fileInput.files;
+
+      // Upload the selected files to the server
+      uploadFiles(files);
+    }
+
+    // Event listener for file input change
+    document.getElementById('csvFile').addEventListener('change', function(event) {
+      var fileInput = event.target;
+      if (fileInput.files.length > 0) {
+        // Read the CSV file headers from all selected files to create checkboxes
+        var headers = [];
+        for (var i = 0; i < fileInput.files.length; i++) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            var csvHeaders = e.target.result.split('\n')[0].split(',');
+            headers = headers.concat(csvHeaders);
+            createCheckboxes(Array.from(new Set(headers))); // Use Set to remove duplicates
+          };
+          reader.readAsText(fileInput.files[i]);
+        }
+      }
+    });
+    document.getElementById('im').addEventListener('click', importCSV);
+  });
+</script>
+</body>
+</html>
