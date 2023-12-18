@@ -1,0 +1,5 @@
+1. Open Google sheets. 
+2. Extension --> AppScripts
+3. Login with google and allow all permissions.
+4. Write code into JS and HTML file from my repo and click run.
+5. Refresh Google Sheets page and import data from as many files as you want.
